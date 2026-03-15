@@ -11,19 +11,17 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         
-        /* プラグスーツのラインのような発光エフェクト */
         .eva-input {
             transition: all 0.3s ease;
             border: 1px solid #cbd5e1;
         }
         .eva-input:focus {
             outline: none;
-            border-color: #8a2be2; /* 初号機パープル */
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3), inset 0 0 5px rgba(0, 255, 204, 0.2); /* 緑のインナーグロウ */
+            border-color: #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3), inset 0 0 5px rgba(0, 255, 204, 0.2);
             background-color: #faf5ff;
         }
 
-        /* シンクロ開始ボタンのエフェクト */
         .sync-btn {
             background: linear-gradient(135deg, #8a2be2 0%, #135bec 100%);
             background-size: 200% 200%;
@@ -35,7 +33,6 @@
             transform: translateY(-2px);
         }
 
-        /* QRコード出現時のアニメーション */
         @keyframes scanline {
             0% { transform: translateY(-100%); }
             100% { transform: translateY(100%); }
@@ -52,116 +49,122 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 text-slate-800">
 
-    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden relative border border-slate-100">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden relative border border-slate-100 mb-10 mt-4">
         
         <div class="h-2 w-full bg-gradient-to-r from-purple-600 via-teal-400 to-rose-500"></div>
 
         <div class="p-8">
-            <div class="text-center mb-8">
+            <div class="text-center mb-6">
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-2">Protocol 08-X / Initialization</p>
                 <h1 class="text-4xl font-black tracking-tighter text-slate-900">HABITUS <span class="text-purple-600">SYNC</span></h1>
                 <p class="text-xs font-semibold text-slate-500 mt-2">あなたの「界」を入力し、ニューラルリンクを構築します。</p>
             </div>
 
-            <div class="space-y-5">
+            <div id="qr-wrapper" class="hidden mb-8 flex-col items-center">
+                <div class="relative qr-scan-effect p-4 bg-white border-2 border-purple-500 rounded-2xl shadow-[0_0_15px_rgba(138,43,226,0.2)] overflow-hidden">
+                    <div id="qrcode"></div>
+                </div>
+                <p class="text-xs text-slate-500 font-bold mt-4 text-center bg-slate-100 px-4 py-2 rounded-lg">相手の端末でこのコードをスキャン！</p>
+                <div class="w-full h-px bg-slate-200 mt-8"></div>
+            </div>
+
+            <div class="space-y-6">
                 <div>
-                    <label class="block text-[10px] font-bold text-purple-600 uppercase tracking-widest mb-1">Subject Name</label>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Subject Name</label>
                     <input type="text" id="userName" placeholder="あなたの名前" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-teal-600 uppercase tracking-widest mb-1">Zone 1 : Core</label>
-                    <input type="text" id="zone1" placeholder="私のこだわり（持論あり）" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <label class="block text-xs font-bold text-purple-600 mb-1 leading-tight">Zone1：私のこだわり、これをとにかく語りたい！、超愛してる！</label>
+                    <input type="text" id="zone1" placeholder="例：エヴァンゲリオン・人間関係に関する研究" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1">Zone 2 : Swamp</label>
-                    <input type="text" id="zone2" placeholder="理屈抜きで大好き！" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <label class="block text-xs font-bold text-teal-600 mb-1 leading-tight">Zone2：理屈抜きで大好き、推してる！どんな小さなことでも好きなこと</label>
+                    <input type="text" id="zone2" placeholder="例：スポーツ観戦・寿司・現代芸術" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-widest mb-1">Zone 3 : Garden</label>
-                    <input type="text" id="zone3" placeholder="最近ちょっと気になる" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <label class="block text-xs font-bold text-rose-500 mb-1 leading-tight">Zone3：最近考えていること、広く浅く知っていること</label>
+                    <input type="text" id="zone3" placeholder="例：就活・日本の楽曲(オールジャンル)・AI活用" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Zone 4 : Ocean</label>
-                    <input type="text" id="zone4" placeholder="誰か私に教えて！" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <label class="block text-xs font-bold text-blue-500 mb-1 leading-tight">Zone4：人に聞いてみたいこと、実はよく知らないけど気になること</label>
+                    <input type="text" id="zone4" placeholder="例：寂しさの根源・プログラミング・リール動画の作り方・友だちとの会話の仕方" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
                 </div>
             </div>
 
             <button onclick="generateQR()" class="sync-btn w-full mt-8 py-4 rounded-xl text-white font-black tracking-widest uppercase text-sm shadow-lg">
                 Synchronization Start
             </button>
-
-            <div id="qr-wrapper" class="hidden mt-8 flex-col items-center">
-                <div class="w-full h-px bg-slate-200 mb-8"></div>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Link Code Generated</p>
-                
-                <div class="relative qr-scan-effect p-4 bg-white border-2 border-purple-500 rounded-2xl shadow-[0_0_15px_rgba(138,43,226,0.2)] overflow-hidden">
-                    <div id="qrcode"></div>
-                </div>
-                
-                <p class="text-xs text-slate-500 font-medium mt-4 text-center">このコードを相手の端末でスキャンし、<br>「界」の同期を開始してください。</p>
-            </div>
+            
         </div>
     </div>
 
 <script>
+    // 【新機能】ページを読み込んだ時、前回入力したデータがあれば復元する！
+    window.onload = function() {
+        const savedDataStr = localStorage.getItem('myHabitus');
+        if(savedDataStr) {
+            try {
+                const savedData = JSON.parse(savedDataStr);
+                if(savedData.name) document.getElementById('userName').value = savedData.name;
+                if(savedData.z1) document.getElementById('zone1').value = savedData.z1;
+                if(savedData.z2) document.getElementById('zone2').value = savedData.z2;
+                if(savedData.z3) document.getElementById('zone3').value = savedData.z3;
+                if(savedData.z4) document.getElementById('zone4').value = savedData.z4;
+            } catch(e) {
+                console.error("データの復元に失敗しました", e);
+            }
+        }
+    };
+
     function generateQR() {
-        // 入力値の取得
         const name = document.getElementById('userName').value;
         const z1 = document.getElementById('zone1').value;
         const z2 = document.getElementById('zone2').value;
         const z3 = document.getElementById('zone3').value;
         const z4 = document.getElementById('zone4').value;
 
-        // エラーハンドリング（未入力チェック）
         if(!name || !z1 || !z2 || !z3 || !z4) {
             alert("システムエラー：すべてのパラメータを入力してシンクロ率を上げてください。");
             return;
         }
 
-        // 自分の端末（ブラウザ）にデータを保存
         const myData = { name: name, z1: z1, z2: z2, z3: z3, z4: z4 };
         localStorage.setItem('myHabitus', JSON.stringify(myData));
 
-        // URLの自動生成（現在いる場所の index.html を match.html に置き換える）
-        // ※ネットに公開した時も自動で正しいURLになる賢い仕様！
         let currentUrl = window.location.href.split('?')[0];
         let baseUrl = currentUrl.replace('index.html', '').replace(/\/$/, '') + '/match.html';
-        
-        // 相手に渡すURLを構築
         const matchUrl = `${baseUrl}?n=${encodeURIComponent(name)}&z1=${encodeURIComponent(z1)}&z2=${encodeURIComponent(z2)}&z3=${encodeURIComponent(z3)}&z4=${encodeURIComponent(z4)}`;
 
-        // 古いQRコードをリセット
         document.getElementById("qrcode").innerHTML = "";
 
-        // 新しいQRコードの生成
         new QRCode(document.getElementById("qrcode"), {
             text: matchUrl,
-            width: 220,
+            width: 220, 
             height: 220,
-            colorDark : "#1e293b", // QRコードの色（濃いスレート）
+            colorDark : "#1e293b",
             colorLight : "#ffffff",
             correctLevel : QRCode.CorrectLevel.L
         });
 
-        // 隠していたQRエリアをフワッと表示
         const qrWrapper = document.getElementById("qr-wrapper");
         qrWrapper.style.display = "flex";
         qrWrapper.animate([
-            { opacity: 0, transform: 'translateY(20px)' },
+            { opacity: 0, transform: 'translateY(-20px)' },
             { opacity: 1, transform: 'translateY(0)' }
         ], { duration: 500, fill: 'forwards', easing: 'ease-out' });
         
-        // ボタンのテキストを変更して「起動完了」感を出す
+        // QRコードが生成されたら、画面の一番上までスクロールしてQRを見やすくする
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         const btn = document.querySelector('.sync-btn');
-        btn.textContent = "READY FOR LINK";
-        btn.style.background = "#10b981"; // エメラルドグリーンに変化
+        btn.textContent = "QR GENERATED (UPDATE)";
+        btn.style.background = "#10b981"; 
     }
 </script>
 
 </body>
-
 </html>
