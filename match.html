@@ -8,119 +8,166 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
-        
-        /* 糸（ライン）の設定：SVGグラデーションを適用し、フェーズで輝度を変える */
+        body { font-family: 'Inter', sans-serif; }
+
         .weaving-line {
             fill: none;
-            stroke: url(#eva-rainbow); /* 虹色グラデーションを指定 */
+            stroke: url(#eva-rainbow);
             stroke-width: 4;
             stroke-linecap: round;
             transition: stroke-dashoffset 1s linear, opacity 3s ease, filter 3s ease;
         }
 
-        /* フェーズごとの背景と糸の変化（プラグスーツ起動のイメージ） */
         body { transition: background 10s ease; }
-        
-        /* Phase 1 (初期): 白背景、糸は休眠状態（グレーっぽく） */
         body.phase-1 { background-color: #ffffff; }
         .phase-1 .weaving-line { opacity: 0.15; filter: grayscale(100%); }
-
-        /* Phase 2 (中盤): 少し青みがかる、糸が覚醒し始める */
         body.phase-2 { background-color: #f8fafc; }
         .phase-2 .weaving-line { opacity: 0.5; filter: grayscale(30%) drop-shadow(0 0 4px rgba(0, 255, 204, 0.3)); }
-
-        /* Phase 3 (終盤): 発光、虹色のシンクロライン全開！ */
         body.phase-3 { background-color: #f1f5f9; }
-        .phase-3 .weaving-line { 
-            opacity: 1; 
+        .phase-3 .weaving-line {
+            opacity: 1;
             filter: grayscale(0%) drop-shadow(0 0 12px rgba(255, 0, 128, 0.6));
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); }
-            50% { transform: translateY(-10px) translateX(5px); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .animate-float { animation: float 6s ease-in-out infinite; }
+        .fade-up { animation: fadeUp 0.5s ease forwards; }
+
+        /* スタイル比較バー */
+        .style-track {
+            height: 6px;
+            border-radius: 9999px;
+            background: linear-gradient(to right, #8a2be2, #06b6d4);
+            position: relative;
+        }
+        .dot-me, .dot-other {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .dot-me    { background: #8a2be2; }
+        .dot-other { background: #f43f5e; }
     </style>
 </head>
 <body class="bg-white text-slate-900 phase-1">
 
+    <!-- 背景ライン -->
     <svg class="fixed inset-0 w-full h-full pointer-events-none z-0" id="line-svg" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
         <defs>
             <linearGradient id="eva-rainbow" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#ff0040">
-                    <animate attributeName="stop-color" values="#ff0040;#ffcc00;#00ffcc;#8a2be2;#ff0040" dur="3s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="50%" stop-color="#00ffcc">
-                    <animate attributeName="stop-color" values="#00ffcc;#8a2be2;#ff0040;#ffcc00;#00ffcc" dur="3s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="100%" stop-color="#8a2be2">
-                    <animate attributeName="stop-color" values="#8a2be2;#ff0040;#ffcc00;#00ffcc;#8a2be2" dur="3s" repeatCount="indefinite" />
-                </stop>
+                <stop offset="0%"   stop-color="#ff0040"><animate attributeName="stop-color" values="#ff0040;#ffcc00;#00ffcc;#8a2be2;#ff0040" dur="3s" repeatCount="indefinite"/></stop>
+                <stop offset="50%"  stop-color="#00ffcc"><animate attributeName="stop-color" values="#00ffcc;#8a2be2;#ff0040;#ffcc00;#00ffcc" dur="3s" repeatCount="indefinite"/></stop>
+                <stop offset="100%" stop-color="#8a2be2"><animate attributeName="stop-color" values="#8a2be2;#ff0040;#ffcc00;#00ffcc;#8a2be2" dur="3s" repeatCount="indefinite"/></stop>
             </linearGradient>
         </defs>
-        <path class="weaving-line" d="M-50,100 C 150,100 100,400 200,400 C 300,400 250,700 450,700" />
-        <path class="weaving-line" d="M450,100 C 250,100 300,400 200,400 C 100,400 150,700 -50,700" />
+        <path class="weaving-line" d="M-50,100 C 150,100 100,400 200,400 C 300,400 250,700 450,700"/>
+        <path class="weaving-line" d="M450,100 C 250,100 300,400 200,400 C 100,400 150,700 -50,700"/>
     </svg>
 
+    <!-- ローディング -->
     <div id="loading-screen" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center p-8">
         <div class="w-24 h-24 mb-12 relative flex items-center justify-center">
             <div class="absolute inset-0 border-4 border-slate-100 rounded-2xl"></div>
-            <div class="w-10 h-10 border-4 border-primary rounded-lg rotate-45 animate-spin"></div>
+            <div class="w-10 h-10 border-4 border-purple-600 rounded-lg rotate-45 animate-spin"></div>
         </div>
         <h3 class="tracking-[0.3em] font-black text-xl mb-2 uppercase">Syncing Habitus</h3>
         <p class="text-slate-400 text-xs mb-8">Deep dive neural link initiating...</p>
         <div class="w-full max-w-xs space-y-2">
             <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div id="loading-bar" class="h-full bg-primary transition-all duration-200" style="width: 0%"></div>
+                <div id="loading-bar" class="h-full bg-purple-600 transition-all duration-200" style="width: 0%"></div>
             </div>
-            <div class="flex justify-between text-[10px] font-bold text-primary uppercase tracking-widest">
+            <div class="flex justify-between text-[10px] font-bold text-purple-600 uppercase tracking-widest">
                 <span>Protocol 08-X</span>
                 <span id="loading-percent">0% Complete</span>
             </div>
         </div>
     </div>
 
+    <!-- 固定ヘッダー（タイマー） -->
     <div id="ui-header" class="hidden fixed top-0 left-0 w-full z-50 flex-col max-w-md mx-auto inset-x-0 pointer-events-none">
         <div class="p-6 flex justify-between items-center pointer-events-auto">
             <span class="material-symbols-outlined opacity-50 cursor-pointer" onclick="location.href='index.html'">close</span>
-            <h2 class="font-bold tracking-tight bg-white/50 px-4 py-1 rounded-full backdrop-blur-sm">Connected</h2>
+            <h2 class="font-bold tracking-tight bg-white/60 px-4 py-1 rounded-full backdrop-blur-sm">Connected</h2>
             <div class="w-6"></div>
         </div>
-        <div class="flex gap-4 px-6 pointer-events-auto" id="large-timer">
+        <div class="flex gap-4 px-6 pointer-events-auto">
             <div class="flex-1 flex flex-col items-center gap-1">
                 <div class="w-full h-20 bg-white/90 border border-slate-200 rounded-2xl flex items-center justify-center backdrop-blur-md shadow-sm">
-                    <span class="text-4xl font-black text-primary tabular-nums" id="t-min">03</span>
+                    <span class="text-4xl font-black text-purple-600 tabular-nums" id="t-min">03</span>
                 </div>
                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-white/50 px-2 rounded-full backdrop-blur-sm">Minutes</span>
             </div>
             <div class="flex-1 flex flex-col items-center gap-1">
                 <div class="w-full h-20 bg-white/90 border border-slate-200 rounded-2xl flex items-center justify-center backdrop-blur-md shadow-sm">
-                    <span class="text-4xl font-black text-primary tabular-nums" id="t-sec">00</span>
+                    <span class="text-4xl font-black text-purple-600 tabular-nums" id="t-sec">00</span>
                 </div>
                 <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-white/50 px-2 rounded-full backdrop-blur-sm">Seconds</span>
             </div>
         </div>
     </div>
 
-    <div id="result-container" class="hidden relative h-screen w-full flex-col max-w-md mx-auto pt-48 z-10">
-        <div class="flex-1 flex flex-col items-center justify-start px-6 relative">
-            <div class="text-center mb-8">
-                <h3 id="connected-name" class="text-2xl font-black tracking-tighter mb-1 bg-white/50 px-4 py-1 rounded-full backdrop-blur-sm inline-block">Connected with ...</h3>
+    <!-- メインコンテンツ（スクロール可能） -->
+    <div id="result-container" class="hidden relative w-full flex-col max-w-md mx-auto pt-52 pb-20 px-6 z-10">
+
+        <!-- 接続名 -->
+        <div class="text-center mb-6">
+            <h3 id="connected-name" class="text-2xl font-black tracking-tighter bg-white/60 px-5 py-2 rounded-full backdrop-blur-sm inline-block">Connected with ...</h3>
+        </div>
+
+        <!-- ① 問いセクション -->
+        <section class="mb-6 fade-up" style="animation-delay: 0.1s">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">問い / Questions</p>
+            <div class="space-y-3">
+                <div class="bg-rose-50/95 border border-rose-200 rounded-2xl px-5 py-4 backdrop-blur-md">
+                    <p class="text-[9px] font-black text-rose-400 uppercase tracking-widest mb-1.5" id="other-q-label">相手の問い</p>
+                    <p class="text-sm font-bold text-rose-800 leading-relaxed whitespace-pre-line" id="other-question">—</p>
+                </div>
+                <div class="bg-purple-50/95 border border-purple-200 rounded-2xl px-5 py-4 backdrop-blur-md">
+                    <p class="text-[9px] font-black text-purple-400 uppercase tracking-widest mb-1.5">あなたの問い</p>
+                    <p class="text-sm font-bold text-purple-800 leading-relaxed whitespace-pre-line" id="my-question">—</p>
+                </div>
             </div>
-            <div id="bubble-field" class="w-full h-64 relative overflow-visible mt-4"></div>
-        </div>
+        </section>
+
+        <!-- ② 共通点セクション -->
+        <section class="mb-6 fade-up" style="animation-delay: 0.25s">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">共通点 / Common Ground</p>
+            <div id="bubble-field" class="flex flex-wrap gap-2"></div>
+            <div id="no-match" class="hidden bg-amber-50/95 border border-amber-200 rounded-2xl px-5 py-4 text-center backdrop-blur-md">
+                <p class="text-sm font-bold text-amber-700">共通キーワードは見つからなかった<br><span class="text-xs font-normal">でも問いから会話を始めよう！</span></p>
+            </div>
+        </section>
+
+        <!-- ③ 会話スタイル比較 -->
+        <section class="mb-6 fade-up" style="animation-delay: 0.4s">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">会話スタイル / Style Sync</p>
+            <div class="bg-white/90 border border-slate-200 rounded-2xl px-5 py-5 backdrop-blur-md">
+                <div class="flex gap-4 text-[9px] font-bold mb-4">
+                    <span class="flex items-center gap-1.5">
+                        <span class="inline-block w-3 h-3 rounded-full bg-purple-600"></span>あなた
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="inline-block w-3 h-3 rounded-full bg-rose-500"></span>
+                        <span id="other-name-style">相手</span>
+                    </span>
+                    <span class="ml-auto flex items-center gap-1 text-emerald-500">
+                        <span>⚡</span><span>= 相性よし</span>
+                    </span>
+                </div>
+                <div id="style-bars" class="space-y-4"></div>
+            </div>
+        </section>
+
     </div>
 
-    <div id="safety-net" class="hidden fixed inset-0 flex-col items-center justify-center p-8 text-center space-y-6 pt-40 z-10">
-        <div class="bg-white/90 p-8 rounded-3xl shadow-xl border border-primary/20 backdrop-blur-md w-full max-w-sm">
-            <span class="material-symbols-outlined text-primary text-6xl mb-4 animate-bounce">restaurant</span>
-            <p class="text-slate-400 text-xs mb-2 uppercase tracking-widest font-bold">Safety Net</p>
-            <h3 class="text-2xl font-bold leading-snug text-slate-800">あなたにとって<br>「飲食における非日常体験」<br>とは？</h3>
-        </div>
-    </div>
-
+    <!-- タイムアップ -->
     <div id="finish-screen" class="hidden fixed inset-0 bg-slate-50 flex-col items-center justify-center p-12 text-center z-[2000]">
         <h1 class="text-6xl font-black tracking-tighter mb-4 text-red-600 drop-shadow-sm">TIME UP</h1>
         <p class="mb-12 font-bold text-slate-800 text-lg leading-relaxed">対話時間が終了しました。<br>次の人の元へ移動してください。</p>
@@ -129,11 +176,42 @@
 
 <script>
     const COLORS = [
-        { bg: 'bg-blue-50/90', text: 'text-blue-700', border: 'border-blue-200' },
+        { bg: 'bg-blue-50/90',    text: 'text-blue-700',    border: 'border-blue-200' },
         { bg: 'bg-emerald-50/90', text: 'text-emerald-700', border: 'border-emerald-200' },
-        { bg: 'bg-amber-50/90', text: 'text-amber-700', border: 'border-amber-200' },
-        { bg: 'bg-slate-50/90', text: 'text-slate-700', border: 'border-slate-200' }
+        { bg: 'bg-amber-50/90',   text: 'text-amber-700',   border: 'border-amber-200' },
+        { bg: 'bg-slate-50/90',   text: 'text-slate-700',   border: 'border-slate-200' }
     ];
+
+    const STYLE_AXES = [
+        { left: '⏳ じっくり深掘り',    right: 'テンポよく広く ⚡',    complementary: false },
+        { left: '🗣 今日は話したい',      right: '今日は聞きたい 👂',    complementary: true  },
+        { left: '🎯 具体・エピソード派', right: '概念・抽象論派 🌀',    complementary: false },
+        { left: '😄 まず笑いから',        right: 'すぐ深いとこへ 🔥',    complementary: false },
+        { left: '🤡 ボケ',                right: 'ツッコミ 👊',           complementary: true  },
+    ];
+
+    function renderStyleBars(mySliders, otherSliders) {
+        const container = document.getElementById('style-bars');
+        STYLE_AXES.forEach((axis, i) => {
+            const myVal    = parseInt(mySliders[i]    ?? 50);
+            const otherVal = parseInt(otherSliders[i] ?? 50);
+            const isComplement = axis.complementary && Math.abs(myVal - otherVal) >= 40;
+
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <div class="flex justify-between text-[9px] font-bold text-slate-400 mb-1.5">
+                    <span>${axis.left}</span>
+                    ${isComplement ? '<span class="text-emerald-500 font-black">⚡ 相性よし</span>' : ''}
+                    <span>${axis.right}</span>
+                </div>
+                <div class="style-track">
+                    <div class="dot-me"    style="left:${myVal}%"></div>
+                    <div class="dot-other" style="left:${otherVal}%"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
 
     function startTimer(duration) {
         let timer = duration;
@@ -154,8 +232,8 @@
                 path.style.strokeDashoffset = length - (progress * length);
             });
 
-            if(timer === 120) document.body.className = "bg-white text-slate-900 phase-2";
-            if(timer === 60) document.body.className = "bg-white text-slate-900 phase-3";
+            if (timer === 120) document.body.className = "bg-white text-slate-900 phase-2";
+            if (timer === 60)  document.body.className = "bg-white text-slate-900 phase-3";
 
             if (--timer < 0) {
                 clearInterval(interval);
@@ -165,14 +243,15 @@
     }
 
     window.onload = function() {
-        const paths = document.querySelectorAll('.weaving-line');
-        paths.forEach(path => {
+        // ラインのセットアップ
+        document.querySelectorAll('.weaving-line').forEach(path => {
             const length = path.getTotalLength();
-            path.style.strokeDasharray = length;
-            path.style.strokeDashoffset = length; 
-            path.dataset.length = length; 
+            path.style.strokeDasharray  = length;
+            path.style.strokeDashoffset = length;
+            path.dataset.length = length;
         });
 
+        // ローディングバー
         let progress = 0;
         const bar = document.getElementById('loading-bar');
         const pct = document.getElementById('loading-percent');
@@ -180,48 +259,82 @@
             progress += 2;
             bar.style.width = progress + "%";
             pct.textContent = progress + "% Complete";
-            if(progress >= 100) clearInterval(loadInt);
+            if (progress >= 100) clearInterval(loadInt);
         }, 30);
 
-        const myData = JSON.parse(localStorage.getItem('myHabitus') || '{}');
+        // データ取得
+        const myData    = JSON.parse(localStorage.getItem('myHabitus') || '{}');
         const urlParams = new URLSearchParams(window.location.search);
-        const otherData = { n: urlParams.get('n'), z1: urlParams.get('z1'), z2: urlParams.get('z2'), z3: urlParams.get('z3'), z4: urlParams.get('z4') };
-        document.getElementById('connected-name').textContent = `Connected with ${otherData.n || 'Someone'}`;
+        const otherData = {
+            n:  urlParams.get('n'),
+            q:  urlParams.get('q'),
+            z1: urlParams.get('z1'),
+            z2: urlParams.get('z2'),
+            z4: urlParams.get('z4'),
+            s1: urlParams.get('s1'),
+            s2: urlParams.get('s2'),
+            s3: urlParams.get('s3'),
+            s4: urlParams.get('s4'),
+            s5: urlParams.get('s5'),
+        };
+
+        const otherName = otherData.n || 'Someone';
+        document.getElementById('connected-name').textContent  = `Connected with ${otherName}`;
+        document.getElementById('other-q-label').textContent   = `${otherName} の問い`;
+        document.getElementById('other-name-style').textContent = otherName;
+
+        // 問い
+        document.getElementById('other-question').textContent = otherData.q || '—';
+        document.getElementById('my-question').textContent    = myData.q    || '—';
+
+        // 共通点マッチング（Zone1, 2, 4）
+        const splitRegex = /[,、・\s]+/;
+        const otherAll   = [otherData.z1, otherData.z2, otherData.z4]
+                            .filter(Boolean).join(' ').split(splitRegex).filter(Boolean);
 
         let matches = [];
-        const splitRegex = /[,、\s]+/;
-        const otherAll = [otherData.z1, otherData.z2, otherData.z3, otherData.z4].join(' ').split(splitRegex);
-        
-        [myData.z1, myData.z2, myData.z3, myData.z4].forEach((val, i) => {
-            if(!val) return;
+        [myData.z1, myData.z2, myData.z4].forEach((val, i) => {
+            if (!val) return;
             val.split(splitRegex).forEach(word => {
-                if(word && otherAll.some(o => o && (word.includes(o) || o.includes(word)))) {
-                    matches.push({ word, label: ["こだわり", "大好き", "気になる", "教えて"][i] });
+                if (word.length < 2) return;
+                if (otherAll.some(o => o.length >= 2 && (word.includes(o) || o.includes(word)))) {
+                    // 重複除去
+                    if (!matches.some(m => m.word === word)) {
+                        matches.push({ word, label: ["こだわり", "大好き", "教えて"][i] });
+                    }
                 }
             });
         });
 
         setTimeout(() => {
             document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('ui-header').style.display = 'flex';
+            document.getElementById('ui-header').style.display      = 'flex';
+            document.getElementById('result-container').style.display = 'flex';
 
+            // 共通点バブル
+            const field = document.getElementById('bubble-field');
             if (matches.length > 0) {
-                document.getElementById('result-container').style.display = 'flex';
-                const field = document.getElementById('bubble-field');
                 matches.forEach((m, i) => {
                     const color = COLORS[i % COLORS.length];
                     const el = document.createElement('div');
-                    el.className = `animate-float absolute px-6 py-3 rounded-full border shadow-md flex flex-col items-center backdrop-blur-md ${color.bg} ${color.border}`;
-                    el.innerHTML = `<span class="text-[8px] uppercase font-bold opacity-60 mb-1 tracking-widest">${m.label}</span><span class="font-black ${color.text}">${m.word}</span>`;
-                    el.style.top = (Math.random() * 70) + '%';
-                    el.style.left = (Math.random() * 60) + '%';
-                    el.style.animationDelay = (i * 0.3) + 's';
+                    el.className = `px-4 py-2 rounded-full border shadow-sm backdrop-blur-md flex flex-col items-center ${color.bg} ${color.border}`;
+                    el.innerHTML = `
+                        <span class="text-[8px] uppercase font-bold opacity-60 tracking-widest">${m.label}</span>
+                        <span class="font-black text-sm ${color.text}">${m.word}</span>
+                    `;
                     field.appendChild(el);
                 });
             } else {
-                document.getElementById('safety-net').style.display = 'flex';
+                document.getElementById('no-match').classList.remove('hidden');
             }
-            startTimer(180); 
+
+            // スタイル比較
+            renderStyleBars(
+                [myData.s1,    myData.s2,    myData.s3,    myData.s4,    myData.s5],
+                [otherData.s1, otherData.s2, otherData.s3, otherData.s4, otherData.s5]
+            );
+
+            startTimer(180);
         }, 2000);
     };
 </script>
