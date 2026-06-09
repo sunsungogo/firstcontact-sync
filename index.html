@@ -7,10 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
+
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        
+
         .eva-input {
             transition: all 0.3s ease;
             border: 1px solid #cbd5e1;
@@ -45,12 +45,48 @@
             animation: scanline 2s linear infinite;
             pointer-events: none;
         }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 9999px;
+            background: linear-gradient(to right, #8a2be2, #06b6d4);
+            outline: none;
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #8a2be2;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            transition: border-color 0.2s, transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            border-color: #135bec;
+            transform: scale(1.15);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #8a2be2;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 text-slate-800">
 
     <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden relative border border-slate-100 mb-10 mt-4">
-        
+
         <div class="h-2 w-full bg-gradient-to-r from-purple-600 via-teal-400 to-rose-500"></div>
 
         <div class="p-8">
@@ -69,51 +105,114 @@
             </div>
 
             <div class="space-y-6">
+
                 <div>
                     <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Subject Name</label>
                     <input type="text" id="userName" placeholder="あなたの名前" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
                 </div>
 
+                <!-- 問い：最上部に配置 -->
+                <div class="bg-orange-50 rounded-2xl p-4 border border-orange-200">
+                    <label class="block text-xs font-black text-orange-500 mb-1 leading-tight tracking-wide">
+                        ❓ あなたの「問い」
+                    </label>
+                    <p class="text-[10px] text-orange-400 mb-2">今あなたが探求していること、頭から離れない問い</p>
+                    <textarea id="question" placeholder="例：人はなぜ孤独を恐れるのか" rows="2"
+                        class="eva-input w-full px-4 py-3 rounded-xl bg-white text-sm font-bold text-slate-900 placeholder-slate-400 resize-none"></textarea>
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold text-purple-600 mb-1 leading-tight">Zone1：私のこだわり、これをとにかく語りたい！、超愛してる！</label>
-                    <input type="text" id="zone1" placeholder="例：エヴァンゲリオン・人間関係に関する研究" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <textarea id="zone1" placeholder="例：エヴァンゲリオン・人間関係に関する研究" rows="2"
+                        class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400 resize-none"></textarea>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-teal-600 mb-1 leading-tight">Zone2：理屈抜きで大好き、推してる！どんな小さなことでも好きなこと</label>
-                    <input type="text" id="zone2" placeholder="例：スポーツ観戦・寿司・現代芸術" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <textarea id="zone2" placeholder="例：スポーツ観戦・寿司・現代芸術" rows="2"
+                        class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400 resize-none"></textarea>
                 </div>
 
+                <!-- Zone3：会話スタイル（スライダー） -->
                 <div>
-                    <label class="block text-xs font-bold text-rose-500 mb-1 leading-tight">Zone3：最近考えていること、広く浅く知っていること</label>
-                    <input type="text" id="zone3" placeholder="例：就活・日本の楽曲(オールジャンル)・AI活用" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <label class="block text-xs font-bold text-rose-500 mb-1 leading-tight">Zone3：あなたの会話スタイル</label>
+                    <p class="text-[10px] text-slate-400 mb-4">直感でスライダーを動かしてみて</p>
+                    <div class="space-y-5">
+
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
+                                <span>⏳ じっくり深掘り</span>
+                                <span>テンポよく広く ⚡</span>
+                            </div>
+                            <input type="range" id="s1" min="0" max="100" value="50">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
+                                <span>🗣 今日は話したい</span>
+                                <span>今日は聞きたい 👂</span>
+                            </div>
+                            <input type="range" id="s2" min="0" max="100" value="50">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
+                                <span>🎯 具体・エピソード派</span>
+                                <span>概念・抽象論派 🌀</span>
+                            </div>
+                            <input type="range" id="s3" min="0" max="100" value="50">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
+                                <span>😄 まず笑いから</span>
+                                <span>すぐ深いとこへ 🔥</span>
+                            </div>
+                            <input type="range" id="s4" min="0" max="100" value="50">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
+                                <span>🤡 ボケ</span>
+                                <span>ツッコミ 👊</span>
+                            </div>
+                            <input type="range" id="s5" min="0" max="100" value="50">
+                        </div>
+
+                    </div>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-blue-500 mb-1 leading-tight">Zone4：人に聞いてみたいこと、実はよく知らないけど気になること</label>
-                    <input type="text" id="zone4" placeholder="例：寂しさの根源・プログラミング・リール動画の作り方・友だちとの会話の仕方" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
+                    <textarea id="zone4" placeholder="例：寂しさの根源・プログラミング・リール動画の作り方・友だちとの会話の仕方" rows="2"
+                        class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400 resize-none"></textarea>
                 </div>
+
             </div>
 
             <button onclick="generateQR()" class="sync-btn w-full mt-8 py-4 rounded-xl text-white font-black tracking-widest uppercase text-sm shadow-lg">
                 Synchronization Start
             </button>
-            
+
         </div>
     </div>
 
 <script>
-    // 【新機能】ページを読み込んだ時、前回入力したデータがあれば復元する！
     window.onload = function() {
         const savedDataStr = localStorage.getItem('myHabitus');
-        if(savedDataStr) {
+        if (savedDataStr) {
             try {
-                const savedData = JSON.parse(savedDataStr);
-                if(savedData.name) document.getElementById('userName').value = savedData.name;
-                if(savedData.z1) document.getElementById('zone1').value = savedData.z1;
-                if(savedData.z2) document.getElementById('zone2').value = savedData.z2;
-                if(savedData.z3) document.getElementById('zone3').value = savedData.z3;
-                if(savedData.z4) document.getElementById('zone4').value = savedData.z4;
+                const d = JSON.parse(savedDataStr);
+                if (d.name) document.getElementById('userName').value = d.name;
+                if (d.q)    document.getElementById('question').value = d.q;
+                if (d.z1)   document.getElementById('zone1').value = d.z1;
+                if (d.z2)   document.getElementById('zone2').value = d.z2;
+                if (d.z4)   document.getElementById('zone4').value = d.z4;
+                if (d.s1 != null) document.getElementById('s1').value = d.s1;
+                if (d.s2 != null) document.getElementById('s2').value = d.s2;
+                if (d.s3 != null) document.getElementById('s3').value = d.s3;
+                if (d.s4 != null) document.getElementById('s4').value = d.s4;
+                if (d.s5 != null) document.getElementById('s5').value = d.s5;
             } catch(e) {
                 console.error("データの復元に失敗しました", e);
             }
@@ -121,33 +220,37 @@
     };
 
     function generateQR() {
-        const name = document.getElementById('userName').value;
-        const z1 = document.getElementById('zone1').value;
-        const z2 = document.getElementById('zone2').value;
-        const z3 = document.getElementById('zone3').value;
-        const z4 = document.getElementById('zone4').value;
+        const name = document.getElementById('userName').value.trim();
+        const q    = document.getElementById('question').value.trim();
+        const z1   = document.getElementById('zone1').value.trim();
+        const z2   = document.getElementById('zone2').value.trim();
+        const z4   = document.getElementById('zone4').value.trim();
+        const s1   = document.getElementById('s1').value;
+        const s2   = document.getElementById('s2').value;
+        const s3   = document.getElementById('s3').value;
+        const s4   = document.getElementById('s4').value;
+        const s5   = document.getElementById('s5').value;
 
-        if(!name || !z1 || !z2 || !z3 || !z4) {
-            alert("システムエラー：すべてのパラメータを入力してシンクロ率を上げてください。");
+        if (!name || !q || !z1 || !z2 || !z4) {
+            alert("システムエラー：名前・問い・Zone1・Zone2・Zone4を入力してシンクロ率を上げてください。");
             return;
         }
 
-        const myData = { name: name, z1: z1, z2: z2, z3: z3, z4: z4 };
+        const myData = { name, q, z1, z2, z4, s1, s2, s3, s4, s5 };
         localStorage.setItem('myHabitus', JSON.stringify(myData));
 
         let currentUrl = window.location.href.split('?')[0];
         let baseUrl = currentUrl.replace('index.html', '').replace(/\/$/, '') + '/match.html';
-        const matchUrl = `${baseUrl}?n=${encodeURIComponent(name)}&z1=${encodeURIComponent(z1)}&z2=${encodeURIComponent(z2)}&z3=${encodeURIComponent(z3)}&z4=${encodeURIComponent(z4)}`;
+        const matchUrl = `${baseUrl}?n=${encodeURIComponent(name)}&q=${encodeURIComponent(q)}&z1=${encodeURIComponent(z1)}&z2=${encodeURIComponent(z2)}&z4=${encodeURIComponent(z4)}&s1=${s1}&s2=${s2}&s3=${s3}&s4=${s4}&s5=${s5}`;
 
         document.getElementById("qrcode").innerHTML = "";
-
         new QRCode(document.getElementById("qrcode"), {
             text: matchUrl,
-            width: 220, 
+            width: 220,
             height: 220,
-            colorDark : "#1e293b",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.L
+            colorDark: "#1e293b",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L
         });
 
         const qrWrapper = document.getElementById("qr-wrapper");
@@ -156,13 +259,12 @@
             { opacity: 0, transform: 'translateY(-20px)' },
             { opacity: 1, transform: 'translateY(0)' }
         ], { duration: 500, fill: 'forwards', easing: 'ease-out' });
-        
-        // QRコードが生成されたら、画面の一番上までスクロールしてQRを見やすくする
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         const btn = document.querySelector('.sync-btn');
         btn.textContent = "QR GENERATED (UPDATE)";
-        btn.style.background = "#10b981"; 
+        btn.style.background = "#10b981";
     }
 </script>
 
