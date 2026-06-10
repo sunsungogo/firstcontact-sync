@@ -81,9 +81,103 @@
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
+
+        /* インポートモーダル */
+        #import-modal {
+            transition: opacity 0.2s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+        #import-sheet {
+            animation: slideUp 0.3s ease forwards;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            display: inline-block;
+            width: 18px; height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6 text-slate-800">
+
+    <!-- ===== インポートモーダル ===== -->
+    <div id="import-modal" class="hidden fixed inset-0 bg-black/50 z-[200] flex items-end justify-center p-4" onclick="closeImportIfOutside(event)">
+        <div id="import-sheet" class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
+
+            <!-- APIキー設定 -->
+            <div id="api-key-section">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-black text-slate-900">🔑 Gemini APIキー</h2>
+                    <button onclick="closeImport()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">
+                    <a href="https://aistudio.google.com/apikey" target="_blank" class="text-purple-600 underline">Google AI Studio</a>
+                    で無料取得できます。このデバイスにのみ保存されます。
+                </p>
+                <input type="password" id="api-key-input" placeholder="AIzaSy..." class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400 mb-3">
+                <button onclick="saveApiKey()" class="w-full py-3 rounded-xl bg-slate-900 text-white font-bold text-sm">保存して続ける →</button>
+            </div>
+
+            <!-- 自己紹介文入力 -->
+            <div id="import-text-section" class="hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-base font-black text-slate-900">📋 自己紹介文をインポート</h2>
+                    <button onclick="closeImport()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">Instagram bio・noteプロフィール・自己紹介文など、なんでもOK。AIがZoneに振り分けます。</p>
+                <textarea id="import-text" rows="6" placeholder="例：デザイナー/FabCafe所属。最近はコミュニティデザインに興味があって、人と人がどう繋がるかをよく考えてます。好きなものはサウナ・映画・ジャズ。最近気になってるのは量子コンピュータ。" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm text-slate-900 placeholder-slate-400 resize-none mb-3"></textarea>
+                <div class="flex gap-2">
+                    <button onclick="showApiKeySection()" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-500 text-xs font-bold">キー変更</button>
+                    <button id="analyze-btn" onclick="analyzeText()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-sm">
+                        AIで解析する ✨
+                    </button>
+                </div>
+            </div>
+
+            <!-- 解析結果プレビュー -->
+            <div id="import-preview-section" class="hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-black text-slate-900">✅ 確認して適用</h2>
+                    <button onclick="closeImport()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">内容を確認・編集してから適用してください。</p>
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <label class="text-[10px] font-black text-orange-500 uppercase tracking-widest">❓ 問い</label>
+                        <textarea id="preview-q" rows="2" class="eva-input w-full mt-1 px-3 py-2 rounded-xl bg-orange-50 text-sm text-slate-900 resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-purple-600 uppercase tracking-widest">Zone1 こだわり</label>
+                        <textarea id="preview-z1" rows="2" class="eva-input w-full mt-1 px-3 py-2 rounded-xl bg-purple-50 text-sm text-slate-900 resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-teal-600 uppercase tracking-widest">Zone2 大好き</label>
+                        <textarea id="preview-z2" rows="2" class="eva-input w-full mt-1 px-3 py-2 rounded-xl bg-teal-50 text-sm text-slate-900 resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Zone4 知りたい</label>
+                        <textarea id="preview-z4" rows="2" class="eva-input w-full mt-1 px-3 py-2 rounded-xl bg-blue-50 text-sm text-slate-900 resize-none"></textarea>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="showImportTextSection()" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-500 text-xs font-bold">やり直す</button>
+                    <button onclick="applyImport()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-sm">フォームに適用 →</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- ===== /インポートモーダル ===== -->
 
     <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden relative border border-slate-100 mb-10 mt-4">
 
@@ -95,6 +189,11 @@
                 <h1 class="text-4xl font-black tracking-tighter text-slate-900">HABITUS <span class="text-purple-600">SYNC</span></h1>
                 <p class="text-xs font-semibold text-slate-500 mt-2">あなたの「界」を入力し、ニューラルリンクを構築します。</p>
             </div>
+
+            <!-- インポートボタン -->
+            <button onclick="openImport()" class="w-full mb-6 py-3 rounded-xl border-2 border-dashed border-purple-300 text-purple-600 font-bold text-sm hover:bg-purple-50 transition-colors">
+                ✨ 自己紹介文からAIで自動入力
+            </button>
 
             <div id="qr-wrapper" class="hidden mb-8 flex-col items-center">
                 <div class="relative qr-scan-effect p-4 bg-white border-2 border-purple-500 rounded-2xl shadow-[0_0_15px_rgba(138,43,226,0.2)] overflow-hidden">
@@ -111,7 +210,6 @@
                     <input type="text" id="userName" placeholder="あなたの名前" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400">
                 </div>
 
-                <!-- 問い：最上部に配置 -->
                 <div class="bg-orange-50 rounded-2xl p-4 border border-orange-200">
                     <label class="block text-xs font-black text-orange-500 mb-1 leading-tight tracking-wide">
                         ❓ あなたの「問い」
@@ -133,12 +231,10 @@
                         class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm font-bold text-slate-900 placeholder-slate-400 resize-none"></textarea>
                 </div>
 
-                <!-- Zone3：会話スタイル（スライダー） -->
                 <div>
                     <label class="block text-xs font-bold text-rose-500 mb-1 leading-tight">Zone3：あなたの会話スタイル</label>
                     <p class="text-[10px] text-slate-400 mb-4">直感でスライダーを動かしてみて</p>
                     <div class="space-y-5">
-
                         <div>
                             <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
                                 <span>⏳ じっくり深掘り</span>
@@ -146,7 +242,6 @@
                             </div>
                             <input type="range" id="s1" min="0" max="100" value="50">
                         </div>
-
                         <div>
                             <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
                                 <span>🗣 今日は話したい</span>
@@ -154,7 +249,6 @@
                             </div>
                             <input type="range" id="s2" min="0" max="100" value="50">
                         </div>
-
                         <div>
                             <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
                                 <span>🎯 具体・エピソード派</span>
@@ -162,7 +256,6 @@
                             </div>
                             <input type="range" id="s3" min="0" max="100" value="50">
                         </div>
-
                         <div>
                             <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
                                 <span>😄 まず笑いから</span>
@@ -170,7 +263,6 @@
                             </div>
                             <input type="range" id="s4" min="0" max="100" value="50">
                         </div>
-
                         <div>
                             <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-2">
                                 <span>🤡 ボケ</span>
@@ -178,7 +270,6 @@
                             </div>
                             <input type="range" id="s5" min="0" max="100" value="50">
                         </div>
-
                     </div>
                 </div>
 
@@ -198,27 +289,22 @@
     </div>
 
 <script>
+    // ===== 初期化 =====
     window.onload = function() {
-        const savedDataStr = localStorage.getItem('myHabitus');
-        if (savedDataStr) {
-            try {
-                const d = JSON.parse(savedDataStr);
-                if (d.name) document.getElementById('userName').value = d.name;
-                if (d.q)    document.getElementById('question').value = d.q;
-                if (d.z1)   document.getElementById('zone1').value = d.z1;
-                if (d.z2)   document.getElementById('zone2').value = d.z2;
-                if (d.z4)   document.getElementById('zone4').value = d.z4;
-                if (d.s1 != null) document.getElementById('s1').value = d.s1;
-                if (d.s2 != null) document.getElementById('s2').value = d.s2;
-                if (d.s3 != null) document.getElementById('s3').value = d.s3;
-                if (d.s4 != null) document.getElementById('s4').value = d.s4;
-                if (d.s5 != null) document.getElementById('s5').value = d.s5;
-            } catch(e) {
-                console.error("データの復元に失敗しました", e);
-            }
-        }
+        const d = JSON.parse(localStorage.getItem('myHabitus') || '{}');
+        if (d.name) document.getElementById('userName').value = d.name;
+        if (d.q)    document.getElementById('question').value = d.q;
+        if (d.z1)   document.getElementById('zone1').value = d.z1;
+        if (d.z2)   document.getElementById('zone2').value = d.z2;
+        if (d.z4)   document.getElementById('zone4').value = d.z4;
+        if (d.s1 != null) document.getElementById('s1').value = d.s1;
+        if (d.s2 != null) document.getElementById('s2').value = d.s2;
+        if (d.s3 != null) document.getElementById('s3').value = d.s3;
+        if (d.s4 != null) document.getElementById('s4').value = d.s4;
+        if (d.s5 != null) document.getElementById('s5').value = d.s5;
     };
 
+    // ===== QR生成 =====
     function generateQR() {
         const name = document.getElementById('userName').value.trim();
         const q    = document.getElementById('question').value.trim();
@@ -246,10 +332,8 @@
         document.getElementById("qrcode").innerHTML = "";
         new QRCode(document.getElementById("qrcode"), {
             text: matchUrl,
-            width: 220,
-            height: 220,
-            colorDark: "#1e293b",
-            colorLight: "#ffffff",
+            width: 220, height: 220,
+            colorDark: "#1e293b", colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.L
         });
 
@@ -261,10 +345,131 @@
         ], { duration: 500, fill: 'forwards', easing: 'ease-out' });
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
         const btn = document.querySelector('.sync-btn');
         btn.textContent = "QR GENERATED (UPDATE)";
         btn.style.background = "#10b981";
+    }
+
+    // ===== インポートモーダル制御 =====
+    function openImport() {
+        const modal = document.getElementById('import-modal');
+        modal.classList.remove('hidden');
+        const hasKey = !!localStorage.getItem('geminiApiKey');
+        hasKey ? showImportTextSection() : showApiKeySection();
+    }
+
+    function closeImport() {
+        document.getElementById('import-modal').classList.add('hidden');
+    }
+
+    function closeImportIfOutside(e) {
+        if (e.target === document.getElementById('import-modal')) closeImport();
+    }
+
+    function showApiKeySection() {
+        document.getElementById('api-key-section').classList.remove('hidden');
+        document.getElementById('import-text-section').classList.add('hidden');
+        document.getElementById('import-preview-section').classList.add('hidden');
+        const saved = localStorage.getItem('geminiApiKey');
+        if (saved) document.getElementById('api-key-input').value = saved;
+    }
+
+    function showImportTextSection() {
+        document.getElementById('api-key-section').classList.add('hidden');
+        document.getElementById('import-text-section').classList.remove('hidden');
+        document.getElementById('import-preview-section').classList.add('hidden');
+    }
+
+    function saveApiKey() {
+        const key = document.getElementById('api-key-input').value.trim();
+        if (!key) { alert('APIキーを入力してください'); return; }
+        localStorage.setItem('geminiApiKey', key);
+        showImportTextSection();
+    }
+
+    // ===== Gemini API呼び出し =====
+    async function analyzeText() {
+        const text = document.getElementById('import-text').value.trim();
+        if (!text) { alert('自己紹介文を入力してください'); return; }
+
+        const apiKey = localStorage.getItem('geminiApiKey');
+        if (!apiKey) { showApiKeySection(); return; }
+
+        const btn = document.getElementById('analyze-btn');
+        btn.innerHTML = '<span class="spinner"></span>解析中...';
+        btn.disabled = true;
+
+        const prompt = `以下の自己紹介文を読んで、その人のHabitus情報をJSON形式で抽出してください。
+
+自己紹介文：
+${text}
+
+以下のJSONのみを返してください（説明文不要）：
+{
+  "q": "その人が今持っている根本的な問い・探求テーマ（1〜2文）",
+  "z1": "その人のこだわり・語りたいもの・超愛してるもの（キーワードをカンマ区切り）",
+  "z2": "その人が理屈抜きで好きなもの・趣味・推してるもの（キーワードをカンマ区切り）",
+  "z4": "その人が人に聞いてみたいこと・気になっていること（キーワードをカンマ区切り）"
+}
+
+情報が読み取れない項目は空文字にしてください。キーワードは日本語で、なるべく具体的に。`;
+
+        try {
+            const res = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.3 }
+                    })
+                }
+            );
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error?.message || `HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+            // JSON部分だけ抽出
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error('JSONが取得できませんでした');
+            const result = JSON.parse(jsonMatch[0]);
+
+            document.getElementById('preview-q').value  = result.q  || '';
+            document.getElementById('preview-z1').value = result.z1 || '';
+            document.getElementById('preview-z2').value = result.z2 || '';
+            document.getElementById('preview-z4').value = result.z4 || '';
+
+            document.getElementById('import-text-section').classList.add('hidden');
+            document.getElementById('import-preview-section').classList.remove('hidden');
+
+        } catch(e) {
+            alert(`解析エラー：${e.message}\n\nAPIキーを確認してください。`);
+        } finally {
+            btn.innerHTML = 'AIで解析する ✨';
+            btn.disabled = false;
+        }
+    }
+
+    // ===== フォームに適用 =====
+    function applyImport() {
+        const q  = document.getElementById('preview-q').value.trim();
+        const z1 = document.getElementById('preview-z1').value.trim();
+        const z2 = document.getElementById('preview-z2').value.trim();
+        const z4 = document.getElementById('preview-z4').value.trim();
+
+        if (q)  document.getElementById('question').value = q;
+        if (z1) document.getElementById('zone1').value = z1;
+        if (z2) document.getElementById('zone2').value = z2;
+        if (z4) document.getElementById('zone4').value = z4;
+
+        closeImport();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
 
