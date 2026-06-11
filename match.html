@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
 
@@ -265,18 +266,31 @@
         // データ取得
         const myData    = JSON.parse(localStorage.getItem('myHabitus') || '{}');
         const urlParams = new URLSearchParams(window.location.search);
-        const otherData = {
-            n:  urlParams.get('n'),
-            q:  urlParams.get('q'),
-            z1: urlParams.get('z1'),
-            z2: urlParams.get('z2'),
-            z4: urlParams.get('z4'),
-            s1: urlParams.get('s1'),
-            s2: urlParams.get('s2'),
-            s3: urlParams.get('s3'),
-            s4: urlParams.get('s4'),
-            s5: urlParams.get('s5'),
-        };
+
+        let otherData = {};
+        const compressed = urlParams.get('d');
+        if (compressed) {
+            // 新形式：圧縮された1パラメータ
+            try {
+                otherData = JSON.parse(LZString.decompressFromEncodedURIComponent(compressed) || '{}');
+            } catch(e) {
+                console.error('データの展開に失敗しました', e);
+            }
+        } else {
+            // 旧形式：個別パラメータ（後方互換）
+            otherData = {
+                n:  urlParams.get('n'),
+                q:  urlParams.get('q'),
+                z1: urlParams.get('z1'),
+                z2: urlParams.get('z2'),
+                z4: urlParams.get('z4'),
+                s1: urlParams.get('s1'),
+                s2: urlParams.get('s2'),
+                s3: urlParams.get('s3'),
+                s4: urlParams.get('s4'),
+                s5: urlParams.get('s5'),
+            };
+        }
 
         const otherName = otherData.n || 'Someone';
         document.getElementById('connected-name').textContent  = `Connected with ${otherName}`;
