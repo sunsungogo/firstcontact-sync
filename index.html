@@ -134,8 +134,8 @@
                     <h2 class="text-base font-black text-slate-900">📋 自己紹介文をインポート</h2>
                     <button onclick="closeImport()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">✕</button>
                 </div>
-                <p class="text-xs text-slate-500 mb-3">Instagram bio・noteプロフィール・自己紹介文など、なんでもOK。AIがZoneに振り分けます。</p>
-                <textarea id="import-text" rows="6" placeholder="例：デザイナー/FabCafe所属。最近はコミュニティデザインに興味があって、人と人がどう繋がるかをよく考えてます。好きなものはサウナ・映画・ジャズ。最近気になってるのは量子コンピュータ。" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm text-slate-900 placeholder-slate-400 resize-none mb-3"></textarea>
+                <p class="text-xs text-slate-500 mb-3">Instagram bio・noteプロフィール・自己紹介文など、なんでもOK。<br>自分のサイトやnoteの<b>URLを貼る</b>のもOK（AIが内容を読みに行きます）。</p>
+                <textarea id="import-text" rows="6" placeholder="例：デザイナー/FabCafe所属。最近はコミュニティデザインに興味があって...&#10;&#10;または URL を貼るだけでもOK：&#10;https://example.com/profile" class="eva-input w-full px-4 py-3 rounded-xl bg-slate-50 text-sm text-slate-900 placeholder-slate-400 resize-none mb-3"></textarea>
                 <div class="flex gap-2">
                     <button onclick="showApiKeySection()" class="py-3 px-4 rounded-xl border border-slate-200 text-slate-500 text-xs font-bold">キー変更</button>
                     <button id="analyze-btn" onclick="analyzeText()" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-sm">
@@ -399,9 +399,18 @@
         btn.innerHTML = '<span class="spinner"></span>解析中...';
         btn.disabled = true;
 
-        const prompt = `以下の自己紹介文を読んで、その人のHabitus情報をJSON形式で抽出してください。
+        // URLが含まれているか検出
+        const urlRegex = /https?:\/\/[^\s]+/g;
+        const urls = text.match(urlRegex) || [];
+        const hasUrl = urls.length > 0;
 
-自己紹介文：
+        const sourceLabel = hasUrl
+            ? '以下のテキスト・URLの内容（URL先のページも読み込んで参照すること）'
+            : '以下の自己紹介文';
+
+        const prompt = `${sourceLabel}を読んで、その人のHabitus情報をJSON形式で抽出してください。
+
+入力内容：
 ${text}
 
 以下のJSONのみを返してください（説明文不要）：
@@ -414,16 +423,22 @@ ${text}
 
 情報が読み取れない項目は空文字にしてください。キーワードは日本語で、なるべく具体的に。`;
 
+        // URLが含まれる場合は url_context ツールを有効化
+        const requestBody = {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.3 }
+        };
+        if (hasUrl) {
+            requestBody.tools = [{ url_context: {} }];
+        }
+
         try {
             const res = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.3 }
-                    })
+                    body: JSON.stringify(requestBody)
                 }
             );
 
